@@ -40,6 +40,7 @@ lazyollama <command>
 | `list`             | List the existing chats            |
 | `select <id>`      | Select a chat by ID                |
 | `delete <id>`      | Delete a chat by ID                |
+| `delete all`       | Delete all chats                   |
 | `model`            | Show the current active model      |
 | `model <name>`     | Change the active model            |
 | `help`             | Show more information              |
