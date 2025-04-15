@@ -57,12 +57,14 @@ func (client SQLiteClient) CreateChat(text string) (int64, error) {
 		Model: os.Getenv("DEFAULT_MODEL"),
 	}
 
-	prompt, err := os.ReadFile("ollama/chat-name-prompt.txt")
-	if err != nil {
-		panic(err)
-	}
+	gen, err := ollama.GenerateChatName(`
+Based on the user's first message below, generate a short and relevant description for this conversation. The description should capture the topic or intent of the message.
+Respond only with the description — no explanations or extra text.
+Keep the description not longer than 5 words
 
-	gen, err := ollama.GenerateChatName(string(prompt) + text)
+
+User's message:
+		` + text)
 	if err != nil {
 		panic(err)
 	}
