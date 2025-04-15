@@ -1,0 +1,6 @@
+Based on the user's first message below, generate a short and relevant description for this conversation. The description should capture the topic or intent of the message.
+Respond only with the description — no explanations or extra text.
+Keep the description not longer than 5 words
+
+
+User's message:
