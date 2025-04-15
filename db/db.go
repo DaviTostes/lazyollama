@@ -132,6 +132,12 @@ func (client SQLiteClient) DeleteChat(id int) error {
 	_, err := client.db.Exec(query, id)
 	return err
 }
+func (client SQLiteClient) DeleteAllChats() error {
+	query := "DELETE FROM chats"
+
+	_, err := client.db.Exec(query)
+	return err
+}
 
 func (client SQLiteClient) CreateMessage(message model.Message) error {
 	sql := `

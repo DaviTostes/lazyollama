@@ -64,6 +64,15 @@ func main() {
 		view.AddList()
 
 	case "delete":
+		if len(args) < 2 {
+			showUsage()
+		}
+
+		if args[1] == "all" {
+			sqliteClient.DeleteAllChats()
+			os.Exit(0)
+		}
+
 		id := getId(args)
 
 		sqliteClient.DeleteChat(id)
@@ -93,10 +102,6 @@ func showUsage() {
 }
 
 func getId(args []string) int {
-	if len(args) < 2 {
-		showUsage()
-	}
-
 	id, err := strconv.Atoi(args[1])
 	if err != nil {
 		panic(err)
