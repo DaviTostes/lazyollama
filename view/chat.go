@@ -7,10 +7,19 @@ import (
 	"lazyollama/model"
 	"lazyollama/ollama"
 	"os"
+	"os/exec"
 	"time"
 )
 
+func startOllama() {
+	fmt.Println("Starting Ollama...")
+	cmd := exec.Command("ollama", "serve")
+	go cmd.CombinedOutput()
+}
+
 func AddNewChat() {
+	startOllama()
+
 	firstMessage := true
 	var chatId int64
 
@@ -18,6 +27,8 @@ func AddNewChat() {
 }
 
 func OpenChat(chatId int64) {
+	startOllama()
+
 	sqliteClient, err := db.NewSQLiteClient()
 	if err != nil {
 		panic(err)
