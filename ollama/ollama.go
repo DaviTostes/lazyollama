@@ -87,16 +87,23 @@ func (o Ollama) Generate(msg string, messages []MessageChat) (*ResponseChat, *Me
 			return nil, nil, err
 		}
 
-		if !isCode && strings.Contains(current.Message.Content, "```") {
+		content := ""
+		foundBacktick := strings.Contains(current.Message.Content, "``")
+
+		if !isCode && foundBacktick {
 			isCode = true
-			current.Message.Content = "\033[32m"
-		} else if isCode && strings.Contains(current.Message.Content, "```") {
-			isCode = false
-			current.Message.Content = "\033[0m"
+			content += "\033[32m"
 		}
 
-		fmt.Print(current.Message.Content)
-		data.Message.Content += current.Message.Content
+		if isCode && foundBacktick && !strings.Contains(content, "\033[32m") {
+			isCode = false
+			content += "\033[0m"
+		}
+
+		content += current.Message.Content
+
+		fmt.Print(content)
+		data.Message.Content += content
 	}
 
 	return &data, &userMessage, nil
