@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type Ollama struct {
@@ -22,26 +22,57 @@ type Response struct {
 	Done       bool   `json:"done"`
 }
 
-func (o Ollama) Generate(msg string) (Response, error) {
+type ResponseChat struct {
+	Model      string      `json:"model"`
+	Created_at string      `json:"created_at"`
+	Message    MessageChat `json:"message"`
+	Done       bool        `json:"done"`
+}
+
+type MessageChat struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
+func (o Ollama) Generate(msg string, messages []MessageChat) (*ResponseChat, *MessageChat, error) {
+	userMessage := MessageChat{
+		Role:    "user",
+		Content: msg,
+	}
+
 	body, _ := json.Marshal(map[string]any{
-		"model":  o.Model,
-		"prompt": msg,
+		"model":    o.Model,
+		"messages": append(messages, userMessage),
 	})
+
 	payload := bytes.NewBuffer(body)
 
-	req, err := http.Post("http://localhost:11434/api/generate", "application/json", payload)
+	req, err := http.Post("http://localhost:11434/api/chat", "application/json", payload)
 	if err != nil {
-		return Response{}, err
+		return nil, nil, err
 	}
+
 	defer req.Body.Close()
 
-	data := Response{
-		Model:      "",
-		Created_at: time.Now().String(),
-		Response:   "",
-		Done:       true,
+	if req.StatusCode != 200 {
+		body, err := io.ReadAll(req.Body)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		var errorResponse ErrorResponse
+		if err = json.Unmarshal(body, &errorResponse); err != nil {
+			return nil, nil, err
+		}
+
+		return nil, nil, errors.New(errorResponse.Error)
 	}
 
+	var data ResponseChat
 	isCode := false
 
 	scanner := bufio.NewScanner(req.Body)
@@ -51,24 +82,24 @@ func (o Ollama) Generate(msg string) (Response, error) {
 			continue
 		}
 
-		var current Response
+		var current ResponseChat
 		if err := json.Unmarshal([]byte(line), &current); err != nil {
-			return Response{}, err
+			return nil, nil, err
 		}
 
-		if !isCode && strings.Contains(current.Response, "```") {
+		if !isCode && strings.Contains(current.Message.Content, "```") {
 			isCode = true
-			current.Response = "\033[32m"
-		} else if isCode && strings.Contains(current.Response, "```") {
+			current.Message.Content = "\033[32m"
+		} else if isCode && strings.Contains(current.Message.Content, "```") {
 			isCode = false
-			current.Response = "\033[0m"
+			current.Message.Content = "\033[0m"
 		}
 
-		fmt.Print(current.Response)
-		data.Response += current.Response
+		fmt.Print(current.Message.Content)
+		data.Message.Content += current.Message.Content
 	}
 
-	return data, nil
+	return &data, &userMessage, nil
 }
 
 func (o Ollama) GenerateChatName(context string) (string, error) {

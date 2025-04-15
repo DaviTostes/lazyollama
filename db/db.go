@@ -148,7 +148,7 @@ func (client SQLiteClient) CreateMessage(message model.Message) error {
 }
 
 func (client SQLiteClient) FetchMessages(chatId int64) ([]model.Message, error) {
-	query := "SELECT * FROM messages WHERE chatId = ?"
+	query := "SELECT * FROM messages WHERE chatId = ? ORDER BY createdAt"
 
 	rows, err := client.db.Query(query, chatId)
 	if err != nil {

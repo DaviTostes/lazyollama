@@ -14,7 +14,7 @@ func AddNewChat() {
 	firstMessage := true
 	var chatId int64
 
-	startChatLoop(firstMessage, chatId)
+	startChatLoop(firstMessage, chatId, nil)
 }
 
 func OpenChat(chatId int64) {
@@ -29,15 +29,26 @@ func OpenChat(chatId int64) {
 		fmt.Println(m.Content)
 	}
 
-	startChatLoop(false, chatId)
+	startChatLoop(false, chatId, messages)
 }
 
-func startChatLoop(firstMessage bool, chatId int64) {
+func startChatLoop(firstMessage bool, chatId int64, lastMessages []model.Message) {
 	scanner := bufio.NewScanner(os.Stdin)
 	sqliteClient, err := db.NewSQLiteClient()
 	if err != nil {
 		panic(err)
 	}
+
+	lastChatMessages := []ollama.MessageChat{}
+	for _, m := range lastMessages {
+		lastChatMessages = append(lastChatMessages, ollama.MessageChat{
+			Role:    m.Sender,
+			Content: m.Content,
+		})
+	}
+
+	messages := []ollama.MessageChat{}
+	messages = append(messages, lastChatMessages...)
 
 	for {
 		fmt.Print("> ")
@@ -51,10 +62,13 @@ func startChatLoop(firstMessage bool, chatId int64) {
 			Model: os.Getenv("DEFAULT_MODEL"),
 		}
 
-		gen, err := ollama.Generate(scanner.Text())
+		gen, userReq, err := ollama.Generate(scanner.Text(), messages)
 		if err != nil {
 			panic(err)
 		}
+
+		messages = append(messages, gen.Message)
+		messages = append(messages, *userReq)
 
 		fmt.Print("\n")
 
@@ -77,7 +91,7 @@ func startChatLoop(firstMessage bool, chatId int64) {
 
 		modelMessage := model.Message{
 			Sender:    "model",
-			Content:   gen.Response,
+			Content:   gen.Message.Content,
 			CreatedAt: time.Now().String(),
 			ChatId:    chatId,
 		}
