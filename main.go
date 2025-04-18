@@ -24,6 +24,17 @@ Avaliable Commands:
 var sqliteClient *db.SQLiteClient
 
 func main() {
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		panic(err)
+	}
+
+	os.Setenv("LAZY_DIR", configDir+"/lazyollama")
+
+	if _, err := os.Stat(os.Getenv("LAZY_DIR")); err != nil {
+		os.Mkdir(os.Getenv("LAZY_DIR"), 0777)
+	}
+
 	flag.Parse()
 	args := flag.Args()
 
@@ -31,13 +42,12 @@ func main() {
 		showUsage()
 	}
 
-	var err error
 	sqliteClient, err = db.NewSQLiteClient()
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = os.Stat("database.sqlite")
+	_, err = os.Stat(os.Getenv("LAZY_DIR") + "/database.sqlite")
 	if err != nil {
 		sqliteClient.CreateTables()
 	}

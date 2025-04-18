@@ -1,34 +1,19 @@
-# 🦙 lazyollama
+# lazyollama 🦙
 
-**lazyollama** is a terminal-based interface for managing conversations with Ollama models, built in Go.  
-It allows you to create, view, and organize your chats in a simple and efficient way — directly from your terminal.
+**lazyollama** is a terminal-based interface written in Go to interact with [Ollama](https://ollama.com/) models — keeping your chats organized and accessible directly from the command line.
+
+No heavy UI, no clutter — just a simple, efficient CLI.
 
 ## 🚀 Features
 
-- Start new conversations with Ollama models
-- List, select, and delete existing chats
-- Easily switch between models
-- Minimal and fast CLI interface
+- Start and manage multiple chats with Ollama models
+- Switch between chats and models on the fly
+- Simple and scriptable interface
+- Optional in-chat commands for power users
 
-## 📦 Installation
+## 📦 Usage
 
-You can install `lazyollama` by cloning the repository and building it:
-
-```bash
-git clone https://github.com/yourusername/lazyollama.git
-cd lazyollama
-go build -o lazyollama
-```
-
-Then move the binary to your path if you'd like:
-
-```bash
-sudo mv lazyollama /usr/local/bin
-```
-
-## 🛠 Usage
-
-```bash
+```sh
 lazyollama <command>
 ```
 
@@ -37,31 +22,52 @@ lazyollama <command>
 | Command            | Description                        |
 |--------------------|------------------------------------|
 | `new`              | Create a new chat                  |
-| `list`             | List the existing chats            |
+| `list`             | List existing chats                |
 | `select <id>`      | Select a chat by ID                |
-| `delete <id>`      | Delete a chat by ID                |
-| `delete all`       | Delete all chats                   |
+| `delete <id>`      | Delete a chat                      |
 | `model`            | Show the current active model      |
 | `model <name>`     | Change the active model            |
-| `help`             | Show more information              |
+| `help`             | Show help information              |
 
-## 💡 Example
+## ⚙️ In-Chat Commands
 
-```bash
-lazyollama new
-lazyollama list
-lazyollama select 2
-lazyollama model llama3
+You can use special commands inside the chat to trigger advanced features:
+
+### `/leetcodehack`
+
+Take a screenshot of a LeetCode problem and get the interpreted solution from the model.
+
+**Dependencies:**
+
+- [`hyprshot`](https://github.com/hyprwm/hyprshot) – for taking the screenshot
+- [`tesseract`](https://github.com/tesseract-ocr/tesseract) – for OCR to transcribe the image
+
+### `/copycode`
+
+Automatically copies the **first code block** from the latest response to your clipboard.
+
+**Dependencies:**
+- `xclip` (X11) **or** `wl-clip` (Wayland) — for clipboard access
+
+## 🤖 Model Suggestions
+
+- Use **gemma:3b** or similar for fast, lightweight general tasks and casual chat.
+- Use **mistral** or **qwen2.5-coder** for coding-heavy tasks like `/leetcodehack`.
+
+## 📥 Installation
+
+Clone the repo and build:
+
+```sh
+git clone https://github.com/yourusername/lazyollama.git
+cd lazyollama
+go build -o lazyollama
 ```
 
-## 🤝 Contributing
+## ❤️ Contributing
 
-Contributions are welcome! Feel free to open issues or submit pull requests.
+PRs and ideas are welcome. Open an issue or send improvements!
 
-## 📄 License
+## 📝 License
 
-This project is licensed under the [MIT License](LICENSE.MIT).
-
----
-
-Happy chatting! 🦙
+MIT License

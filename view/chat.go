@@ -3,6 +3,7 @@ package view
 import (
 	"bufio"
 	"fmt"
+	"lazyollama/commands"
 	"lazyollama/db"
 	"lazyollama/model"
 	"lazyollama/ollama"
@@ -73,13 +74,36 @@ func startChatLoop(firstMessage bool, chatId int64, lastMessages []model.Message
 			Model: os.Getenv("DEFAULT_MODEL"),
 		}
 
-		gen, userReq, err := ollama.Generate(scanner.Text(), messages)
-		if err != nil {
-			panic(err)
-		}
+		switch scanner.Text() {
+		case "/leetcodehack":
+			gen, userReq, err := commands.GenerateLeetHack(&ollama)
+			if err != nil {
+				panic(err)
+			}
 
-		messages = append(messages, gen.Message)
-		messages = append(messages, *userReq)
+			messages = append(messages, *userReq)
+			messages = append(messages, gen.Message)
+		case "/copycode":
+			if len(messages) > 0 {
+				message := messages[len(messages)-1]
+
+				err := commands.CopyCode(message)
+				if err != nil {
+					fmt.Println("Nothing to copy")
+					continue
+				}
+
+				fmt.Println("Copied to clipboard")
+			}
+		default:
+			gen, userReq, err := ollama.Generate(scanner.Text(), messages)
+			if err != nil {
+				panic(err)
+			}
+
+			messages = append(messages, *userReq)
+			messages = append(messages, gen.Message)
+		}
 
 		fmt.Print("\n")
 
@@ -102,7 +126,7 @@ func startChatLoop(firstMessage bool, chatId int64, lastMessages []model.Message
 
 		modelMessage := model.Message{
 			Sender:    "model",
-			Content:   gen.Message.Content,
+			Content:   messages[len(messages)-1].Content,
 			CreatedAt: time.Now().String(),
 			ChatId:    chatId,
 		}

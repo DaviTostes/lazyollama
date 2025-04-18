@@ -15,7 +15,7 @@ type SQLiteClient struct {
 }
 
 func NewSQLiteClient() (*SQLiteClient, error) {
-	db, err := sql.Open("sqlite", "./database.sqlite")
+	db, err := sql.Open("sqlite", os.Getenv("LAZY_DIR")+"/database.sqlite")
 	if err != nil {
 		return nil, err
 	}
