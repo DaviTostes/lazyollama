@@ -49,6 +49,24 @@ Automatically copies the **first code block** from the latest response to your c
 **Dependencies:**
 - `xclip` (X11) **or** `wl-clip` (Wayland) — for clipboard access
 
+### `/embed`
+
+Embed a `.txt` file into the current chat. This file will be used as part of the context.
+
+### `/usecontext`
+
+Enable the model to use the embedded context when generating a response. This triggers the RAG (Retrieval-Augmented Generation) process using your attached `.txt` files.
+
+## How Context Embedding Works (RAG)
+
+lazyollama supports basic Retrieval-Augmented Generation (RAG) using local .txt files.
+
+When you run /embed, the file is split into chunks and embedded using a language model. These embeddings are stored locally.
+
+When you run /usecontext, the tool retrieves the most relevant chunks using cosine similarity — it compares the meaning of your current message with the embedded content to find related pieces.
+
+It uses a top-K strategy (e.g., top 3 most similar chunks) to pick what goes into the final prompt. This helps the model answer based on your documents, like personal notes or guides.
+
 ## 🤖 Model Suggestions
 
 - Use **gemma:3b** or similar for fast, lightweight general tasks and casual chat.
@@ -59,7 +77,7 @@ Automatically copies the **first code block** from the latest response to your c
 Clone the repo and build:
 
 ```sh
-git clone https://github.com/yourusername/lazyollama.git
+git clone https://github.com/davitostes/lazyollama.git
 cd lazyollama
 go build -o lazyollama
 ```

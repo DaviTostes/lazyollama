@@ -38,6 +38,10 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
+type EmbeddingResponse struct {
+	Embedding []float64 `json:"embedding"`
+}
+
 func (o Ollama) Generate(msg string, messages []MessageChat) (*ResponseChat, *MessageChat, error) {
 	userMessage := MessageChat{
 		Role:    "user",
@@ -134,4 +138,36 @@ func (o Ollama) GenerateChatName(context string) (string, error) {
 	}
 
 	return resp.Response, err
+}
+
+func GetEmbedding(text string) ([]float64, error) {
+	body, err := json.Marshal(map[string]string{
+		"model":  "nomic-embed-text",
+		"prompt": text,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	payload := bytes.NewBuffer(body)
+
+	req, err := http.Post("http://localhost:11434/api/embeddings", "application/json", payload)
+	if err != nil {
+		return nil, err
+	}
+
+	defer req.Body.Close()
+
+	respBody, err := io.ReadAll(req.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp EmbeddingResponse
+	err = json.Unmarshal(respBody, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Embedding, nil
 }

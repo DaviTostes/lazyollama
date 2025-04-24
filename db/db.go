@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"lazyollama/model"
 	"lazyollama/ollama"
 	"os"
@@ -43,6 +44,14 @@ func (client SQLiteClient) CreateTables() error {
 	CREATE TABLE model(
 		id INTEGER PRIMARY KEY,
 		name TEXT NOT NULL
+	);
+
+	CREATE TABLE embeddings(
+		id INTEGER PRIMARY KEY,
+		text STRING NOT NULL,
+		emb STRING NOT NULL,
+		chatId INTEGER NOT NULL,
+		FOREIGN KEY(chatId) REFERENCES chats(id) ON DELETE CASCADE
 	);
 
 	INSERT INTO model(id, name) VALUES(1, "llama3.2") 
@@ -127,9 +136,13 @@ func (client SQLiteClient) FetchChatById(id int) (*model.Chat, error) {
 }
 
 func (client SQLiteClient) DeleteChat(id int) error {
-	query := "DELETE FROM chats WHERE id = ?"
+	query := `
+		DELETE FROM chats WHERE id = ?;
+		DELETE FROM messages WHERE chatId = ?;
+		DELETE FROM embeddings WHERE chatId = ?;
+	`
 
-	_, err := client.db.Exec(query, id)
+	_, err := client.db.Exec(query, id, id, id)
 	return err
 }
 func (client SQLiteClient) DeleteAllChats() error {
@@ -203,4 +216,50 @@ func (client SQLiteClient) UpdateModel(name string) error {
 	}
 
 	return nil
+}
+
+func (client SQLiteClient) CreateEmbedding(emb model.Embedding) error {
+	sql := `
+		INSERT INTO embeddings(text, emb, chatId)
+		VALUES (?, ?, ?);
+	`
+
+	jsonEmb, err := json.Marshal(emb.Emb)
+	if err != nil {
+		return err
+	}
+
+	_, err = client.db.Exec(sql, emb.Text, string(jsonEmb), emb.ChatId)
+	return err
+}
+
+func (client SQLiteClient) FetchEmbeddings(chatId int) ([]model.Embedding, error) {
+	query := "SELECT * FROM embeddings WHERE chatId = ?"
+
+	rows, err := client.db.Query(query, chatId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var chats []model.Embedding
+
+	for rows.Next() {
+		var jsonEmb string
+		e := &model.Embedding{}
+
+		err := rows.Scan(&e.Id, &e.Text, &jsonEmb, &e.ChatId)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal([]byte(jsonEmb), &e.Emb)
+		if err != nil {
+			return nil, err
+		}
+
+		chats = append(chats, *e)
+	}
+
+	return chats, err
 }
