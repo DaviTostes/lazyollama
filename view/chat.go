@@ -10,6 +10,7 @@ import (
 	"lazyollama/vecstore"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -86,11 +87,17 @@ func startChatLoop(firstMessage bool, chatId int64, lastMessages []model.Message
 			messages = append(messages, *userReq)
 			messages = append(messages, gen.Message)
 
-		case scanner.Text() == "/copycode":
+		case strings.Contains(scanner.Text(), "/copycode"):
 			if len(messages) > 0 {
 				message := messages[len(messages)-1]
 
-				err := commands.CopyCode(message)
+				number, err := strconv.Atoi(strings.Split(scanner.Text(), ":")[1])
+				if err != nil {
+					fmt.Println("Error getting where to copy")
+					continue
+				}
+
+				err = commands.CopyCode(message, number)
 				if err != nil {
 					fmt.Println("Nothing to copy")
 					continue

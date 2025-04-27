@@ -8,15 +8,17 @@ import (
 	"strings"
 )
 
-func CopyCode(message ollama.MessageChat) error {
-	regex := regexp.MustCompile("(?s)```(?:\\w+)?\\s*(.*?)\\s*```")
-	matches := regex.FindStringSubmatch(message.Content)
+func CopyCode(message ollama.MessageChat, number int) error {
+	regex := regexp.MustCompile("```(\\w+)?\\s*([\\s\\S]*?)```")
+	matches := regex.FindAllStringSubmatch(message.Content, -1)
 
-	if len(matches) < 2 {
-		return errors.New("Nothing found")
+	if len(matches) == 0 {
+		return errors.New("Nothing to copy")
 	}
 
-	code := strings.TrimSpace(matches[1])
+	match := matches[number]
+
+	code := strings.TrimSpace(match[2])
 	code = strings.ReplaceAll(code, "\x1b[0m", "")
 
 	if _, err := exec.LookPath("xclip"); err == nil {

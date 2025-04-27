@@ -42,9 +42,9 @@ Take a screenshot of a LeetCode problem and get the interpreted solution from th
 - [`hyprshot`](https://github.com/hyprwm/hyprshot) – for taking the screenshot
 - [`tesseract`](https://github.com/tesseract-ocr/tesseract) – for OCR to transcribe the image
 
-### `/copycode`
+### `/copycode:<number>`
 
-Automatically copies the **first code block** from the latest response to your clipboard.
+Automatically copies the code block of <number> from the latest response to your clipboard.
 
 **Dependencies:**
 - `xclip` (X11) **or** `wl-clip` (Wayland) — for clipboard access
@@ -57,7 +57,7 @@ Embed a `.txt` file into the current chat. This file will be used as part of the
 
 Enable the model to use the embedded context when generating a response. This triggers the RAG (Retrieval-Augmented Generation) process using your attached `.txt` files.
 
-## How Context Embedding Works (RAG)
+## 🧠 How Context Embedding Works (RAG)
 
 lazyollama supports basic Retrieval-Augmented Generation (RAG) using local .txt files.
 
